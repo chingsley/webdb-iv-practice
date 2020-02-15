@@ -1,8 +1,6 @@
 import User from '../data/models/User';
-import dbConfig from '../data/dbConfig';
-import { reset } from 'nodemon';
 
-const findAllUsers = async (req, res, next) => {
+const findAllUsers = async (req, res) => {
   try {
     const users = await User.findAll();
     res.status(200).json(users);
@@ -73,7 +71,9 @@ const removeUser = async (req, res) => {
       res.status(404).json({ error: `Could not find user with id ${id}` });
     }
   } catch (err) {
-    console.log(err.message);
+    if (err.code && err.code === 'SQLITE_CONSTRAINT') {
+      return res.status(403).json({ error: "A user with posts cannot be deleted. Delete the user's posts first" })
+    }
     res.status(400).json({ error: 'Failed to delete user. ' });
   }
 };
